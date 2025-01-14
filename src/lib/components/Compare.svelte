@@ -52,7 +52,7 @@
 <div class="flex w-full flex-col gap-4 p-2">
   <h1 class="text-center text-2xl">Compare</h1>
   {#if cols.length > 0}
-    <div class="flex w-full flex-row">
+    <div class="flex w-full flex-row justify-center">
       {#each Object.entries(entriesByColumn) as [key, cells], i}
         {#if i === 0}
           <Column key="block" cells={blockCells} noDelimiter size="lg" />

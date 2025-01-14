@@ -1,6 +1,7 @@
-import { zeroAddress, type Hex, getAddress } from 'viem'
+import { zeroAddress, type Hex, getAddress, parseAbi, decodeFunctionData } from 'viem'
 import type { QuoteOptions, Quoter } from '../trace.svelte'
 import type { Token } from '../token.svelte'
+import { noop } from 'lodash'
 
 const eee = getAddress('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE')
 
@@ -60,6 +61,10 @@ export type NineXQuote = {
   sources: Source[]
 }
 
+const abi = parseAbi([
+  `function transformERC20(address inputToken,address outputToken,uint256 inputTokenAmount,uint256 minOutputTokenAmount,bytes memory transformations) public returns (uint256 outputTokenAmount)`,
+])
+
 export const quoter: Quoter = async (quoteOptions: QuoteOptions) => {
   const url = new URL('https://api.9mm.pro/swap/v1/quote')
   const chainId = quoteOptions.client.chain!.id as unknown as keyof typeof mappings
@@ -83,8 +88,11 @@ export const quoter: Quoter = async (quoteOptions: QuoteOptions) => {
     [quoteOptions.outputToken!.address, quoteOptions.outputToken!],
   ])
   data.orders.forEach((order) => {
-    const router = getAddress(order.fillData.router || order.fillData.vault)
-    names.set(getAddress(order.fillData.router), order.source)
+    const r = order.fillData.router || order.fillData.vault
+    if (r) {
+      const router = getAddress(r)
+      names.set(router, names.get(router) || order.source)
+    }
     if (order.makerToken) {
       const addr = getAddress(order.makerToken)
       tokens.set(addr, tokens.get(addr) ?? null)
@@ -100,9 +108,20 @@ export const quoter: Quoter = async (quoteOptions: QuoteOptions) => {
   })
 
   const value = data.sellTokenAddress.toLowerCase() === eee.toLowerCase() ? quoteOptions.amount! : BigInt(0)
+  let minOut = 0n
+  try {
+    const { functionName, args } = decodeFunctionData({ abi, data: data.data })
+    if (functionName === 'transformERC20') {
+      const [, , , minOutputTokenAmount, ,] = args
+      minOut = minOutputTokenAmount
+    }
+  } catch (err) {
+    noop.call(err)
+  }
   return {
     names,
     tokens,
+    minOut,
     inputs: {
       from: quoteOptions.from!,
       to: data.to,

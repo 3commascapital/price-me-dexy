@@ -154,6 +154,7 @@ export type QuoteOptions = {
 export type TracerOptions = {
   names: Map<Hex, string>
   tokens: Map<Hex, Token | null>
+  minOut: bigint
   inputs: Partial<TraceCallOptions> & {
     value: bigint
     from: Address

@@ -77,6 +77,7 @@ export const quoter: Quoter = async (quoteOptions: QuoteOptions) => {
   return {
     names,
     tokens,
+    minOut: BigInt(data.destAmount),
     inputs: {
       from: quoteOptions.from!,
       to: piteas,

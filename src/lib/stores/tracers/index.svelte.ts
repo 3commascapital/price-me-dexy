@@ -23,6 +23,7 @@ export const quoters: Record<Key, Quoter> = {
 
 export type Entry = {
   block: Block
+  minOut: string
   value: string
   cost: bigint
   symbol: string
@@ -40,6 +41,7 @@ export const entriesByColumn = $state<Record<Key, Entry[]>>({
 const freshEntry = (block: Block): Entry => {
   return {
     block,
+    minOut: '0',
     id: _.uniqueId(),
     value: '',
     cost: 0n,
@@ -72,6 +74,9 @@ export const getQuotes = _.debounce(async (quoteOptions: QuoteOptions, cancelled
   }
   return await Promise.all(
     quotes.map(async (tracerOptions, i) => {
+      if (!tracerOptions) {
+        return null
+      }
       const key = entries[i][0] as Key
       const entry = freshEntries[i]
       const res = await execute(key, quoteOptions, tracerOptions!, cancelled)
@@ -81,7 +86,16 @@ export const getQuotes = _.debounce(async (quoteOptions: QuoteOptions, cancelled
       if (index === -1) {
         return null
       }
-      const e = sanitizeEntries(entry, res as TraceResult, cancelled, situation === 'error' ? situation : null)
+      const minOut = formatUnits(tracerOptions.minOut, quoteOptions.outputToken!.decimals)
+      const e = sanitizeEntries(
+        {
+          ...entry,
+          minOut,
+        },
+        res as TraceResult,
+        cancelled,
+        situation === 'error' ? situation : null,
+      )
       const list = $state(
         [
           ...existing.slice(0, index), //

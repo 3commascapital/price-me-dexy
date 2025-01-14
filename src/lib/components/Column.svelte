@@ -9,20 +9,21 @@
 </script>
 
 <div class="flex w-full flex-col">
-  <div class="flex text-right font-mono">{key}</div>
+  <div class="flex px-2 text-right font-mono font-bold">{key}</div>
   {#each cells as cell}
-    <div
-      class="flex overflow-hidden text-ellipsis text-right font-mono"
-      class:max-w-48={size === 'md'}
-      class:max-w-64={size === 'lg'}
-    >
+    <div class="flex overflow-hidden text-ellipsis border-t text-right font-mono">
       {#if cell.error}
-        <span class="overflow-hidden text-ellipsis whitespace-nowrap">Error</span>
+        <span class="overflow-hidden text-ellipsis whitespace-pre px-2 italic">Error{'\n '}</span>
       {:else if cell.loading}
-        <span class="overflow-hidden text-ellipsis whitespace-nowrap">Loading...</span>
+        <span class="overflow-hidden text-ellipsis whitespace-pre px-2 italic">Loading...{'\n '} </span>
       {:else}
-        <span class="overflow-hidden text-ellipsis whitespace-nowrap"
-          >{noDelimiter ? cell.value : addDecimalDelimiter(cell.value)}</span
+        <span
+          class="overflow-hidden text-ellipsis whitespace-pre px-2 text-left"
+          class:max-w-48={size === 'md'}
+          class:max-w-64={size === 'lg'}
+          >{noDelimiter
+            ? `${cell.value}\n `
+            : ` ${addDecimalDelimiter(cell.value)}\n/${addDecimalDelimiter(cell.minOut)}`}</span
         >{cell.symbol}
       {/if}
     </div>

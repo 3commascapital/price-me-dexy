@@ -6,17 +6,32 @@
       fromStore.value = (accounts[0] as Hex) || null
     })
   }
+  const from = $derived(fromStore.value)
 </script>
 
-<button
-  class="w-full rounded-md p-2 text-lg text-white"
-  class:bg-blue-500={!fromStore.value}
-  class:bg-blue-300={!!fromStore.value}
-  on:click={connect}
->
-  {#if fromStore.value}
-    Connected
+<span class="relative h-12 w-full text-lg text-white">
+  {#if from}
+    <span
+      class="flex w-full items-center justify-center rounded-lg p-2 text-center"
+      class:bg-blue-500={!from}
+      class:bg-blue-100={!!from}
+      class:text-gray-800={!!from}
+      class:border-gray-300={!!from}
+      class:border-2={!!from}>Connected</span
+    ><button
+      class="absolute right-0 top-0 flex size-12 h-full content-end items-center justify-center rounded-r-lg bg-blue-500 p-2 text-2xl text-white"
+      onclick={(e) => {
+        e.stopPropagation()
+        e.preventDefault()
+        fromStore.value = null
+      }}>&times;</button
+    >
   {:else}
-    Connect
+    <button
+      class="flex h-12 w-full items-center justify-center rounded-lg p-2"
+      class:bg-blue-500={!from}
+      class:bg-blue-300={!!from}
+      onclick={connect}>Connect</button
+    >
   {/if}
-</button>
+</span>
