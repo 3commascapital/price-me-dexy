@@ -28,7 +28,7 @@
         amount,
         from,
         to,
-        allowedSlippage: 0.5, // %
+        allowedSlippage: 0.01, // %
       },
       () => cancelled,
     )

@@ -17,13 +17,14 @@
       {:else if cell.loading}
         <span class="overflow-hidden text-ellipsis whitespace-pre px-2 italic">Loading...{'\n '} </span>
       {:else}
+        {@const cellData = noDelimiter
+          ? `${cell.value}\n `
+          : ` ${addDecimalDelimiter(cell.value)}\n/${addDecimalDelimiter(cell.minOut)}`}
         <span
           class="overflow-hidden text-ellipsis whitespace-pre px-2 text-left"
           class:max-w-48={size === 'md'}
           class:max-w-64={size === 'lg'}
-          >{noDelimiter
-            ? `${cell.value}\n `
-            : ` ${addDecimalDelimiter(cell.value)}\n/${addDecimalDelimiter(cell.minOut)}`}</span
+          title={cellData}>{cellData}</span
         >{cell.symbol}
       {/if}
     </div>
