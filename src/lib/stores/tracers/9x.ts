@@ -62,7 +62,7 @@ export type NineXQuote = {
 }
 
 const abi = parseAbi([
-  `function transformERC20(address inputToken,address outputToken,uint256 inputTokenAmount,uint256 minOutputTokenAmount,bytes memory transformations) public returns (uint256 outputTokenAmount)`,
+  `function transformERC20(address inputToken,address outputToken,uint256 inputTokenAmount,uint256 minOutputTokenAmount,(uint32,bytes)[] transformations) public returns (uint256 outputTokenAmount)`,
 ])
 
 export const quoter: Quoter = async (quoteOptions: QuoteOptions) => {
@@ -73,19 +73,20 @@ export const quoter: Quoter = async (quoteOptions: QuoteOptions) => {
   url.searchParams.set('sellToken', inputTokenAddress)
   url.searchParams.set('sellAmount', quoteOptions.amount!.toString())
   url.searchParams.set('buyToken', quoteOptions.outputToken!.address)
-  url.searchParams.set('slippagePercentage', quoteOptions.allowedSlippage.toString())
+  url.searchParams.set('slippagePercentage', (quoteOptions.allowedSlippage / 100).toString())
   url.searchParams.set('includedSources', '')
   const response = await fetch(url.toString())
   const data = (await response.json()) as NineXQuote
+  const { inputToken, outputToken } = quoteOptions
   const names = new Map<Hex, string>([
     [getAddress(quoteOptions.from!), 'User'],
     [getAddress(data.to), '9x'],
-    [getAddress(quoteOptions.inputToken!.address), quoteOptions.inputToken!.symbol],
-    [getAddress(quoteOptions.outputToken!.address), quoteOptions.outputToken!.symbol],
+    [getAddress(inputToken!.address), inputToken!.symbol],
+    [getAddress(outputToken!.address), outputToken!.symbol],
   ])
   const tokens = new Map<Hex, Token | null>([
-    [quoteOptions.inputToken!.address, quoteOptions.inputToken!],
-    [quoteOptions.outputToken!.address, quoteOptions.outputToken!],
+    [inputToken!.address, inputToken!],
+    [outputToken!.address, outputToken!],
   ])
   data.orders.forEach((order) => {
     const r = order.fillData.router || order.fillData.vault
@@ -116,6 +117,7 @@ export const quoter: Quoter = async (quoteOptions: QuoteOptions) => {
       minOut = minOutputTokenAmount
     }
   } catch (err) {
+    console.log(err)
     noop.call(err)
   }
   return {
