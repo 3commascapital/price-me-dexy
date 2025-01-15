@@ -36,3 +36,8 @@ npm run build
 You can preview the production build with `npm run preview`.
 
 > To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+
+### points of confusion
+
+1. piteas - why require a slippage tolerance? if you are calculating a maximum of tokens out, then there should be no problem, a zero value should not fail. also, the min amount returned matches what is traced, so why require it? why does it break the backend when sent to zero
+1. 9x - please link your steps to the pools that you are swapping through so that transfers can be linked appropriately.

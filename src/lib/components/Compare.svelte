@@ -5,7 +5,7 @@
   import { inputTokenStore, outputTokenStore } from '$lib/stores/token.svelte'
   import { fromStore, toStore } from '$lib/stores/address.svelte'
   import { entriesByColumn, getQuotes, type Entry } from '$lib/stores/tracers/index.svelte'
-  import { type PublicClient } from 'viem'
+  import { type Block, type PublicClient } from 'viem'
   import _ from 'lodash'
   import { blockInfo } from '$lib'
 
@@ -17,8 +17,18 @@
   const from = $derived.by(() => fromStore.value)
   const to = $derived.by(() => toStore.value || fromStore.value)
 
+  let lastBlock = $state<Block | null>(null)
   $effect(() => {
     let cancelled = false
+    if (!block?.number) {
+      return
+    }
+    if (lastBlock) {
+      if (block.number % 3n !== 0n) {
+        return
+      }
+    }
+    lastBlock = block
     getQuotes(
       {
         client: client as PublicClient,
@@ -50,7 +60,7 @@
 </script>
 
 <div class="flex w-full flex-col gap-4 p-2">
-  <h1 class="text-center text-2xl">Compare</h1>
+  <!-- <h1 class="text-center text-2xl">Compare</h1> -->
   {#if cols.length > 0}
     <div class="flex w-full flex-row justify-center">
       {#each Object.entries(entriesByColumn) as [key, cells], i}

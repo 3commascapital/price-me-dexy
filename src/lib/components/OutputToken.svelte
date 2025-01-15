@@ -6,15 +6,22 @@
   import { outputTokenStore } from '$lib/stores/token.svelte'
   import { parseUnits } from 'viem'
   import TokenIcon from './TokenIcon.svelte'
+  import { modalSelectStore, STATE, stateStore } from '$lib/stores/modal.svelte'
   const focused = createFocusTrap()
   const input = createInputSanitizer(numberModifier, true)
   const isAmountInput = $derived(sideInputStore.value === 'out')
   const value = $derived(sideInputStore.value === 'out' ? input.value[1] : estimatedAmountStore.value)
+  const selectToken = () => {
+    modalSelectStore.value = 'select-token'
+    stateStore.value = STATE.Opening
+  }
 </script>
 
 <div class="flex w-full flex-row">
   <label for="output-token" class="w-full text-sm font-bold">
     <input
+      disabled
+      placeholder="..."
       type="text"
       {value}
       id="output-token"
@@ -45,6 +52,7 @@
       class:bg-blue-100={isAmountInput}
       class:border-blue-500={focused.value}
       class:border-gray-300={!focused.value}
+      onclick={selectToken}
     >
       <span class="flex min-w-14 items-center justify-end gap-1">
         {outputTokenStore.value.symbol}

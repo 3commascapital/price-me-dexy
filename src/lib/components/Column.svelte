@@ -20,11 +20,13 @@
         {@const cellData = noDelimiter
           ? `${cell.value}\n `
           : ` ${addDecimalDelimiter(cell.value)}\n/${addDecimalDelimiter(cell.minOut)}`}
+        {@const nonZeroToProtocol = key !== 'block' && cell.toProtocol !== '0'}
         <span
-          class="overflow-hidden text-ellipsis whitespace-pre px-2 text-left"
+          class="relative overflow-hidden text-ellipsis whitespace-pre px-2 text-left"
           class:max-w-48={size === 'md'}
           class:max-w-64={size === 'lg'}
-          title={cellData}>{cellData}</span
+          title={nonZeroToProtocol ? `${cellData} (${cell.toProtocol} @ ${cell.toProtocolPercent}%)` : cellData}
+          >{cellData}{#if nonZeroToProtocol}<span class="absolute left-0 top-0">*</span>{/if}</span
         >{cell.symbol}
       {/if}
     </div>

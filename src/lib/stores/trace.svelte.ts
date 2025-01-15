@@ -153,7 +153,7 @@ export type QuoteOptions = {
 
 export type TracerOptions = {
   names: Map<Hex, string>
-  tokens: Map<Hex, Token | null>
+  tokens: Map<Hex, Omit<Token, 'chainId' | 'name'> | null>
   minOut: bigint
   inputs: Partial<TraceCallOptions> & {
     value: bigint
@@ -221,7 +221,7 @@ export const traceCall = async (client: PublicClient, block: Block, tracerOption
     .traceCall(tracerOptions)
 }
 
-export const tokenFetches = (client: PublicClient, tokens: Map<Hex, Token | null>) => {
+export const tokenFetches = (client: PublicClient, tokens: Map<Hex, Omit<Token, 'chainId' | 'name'> | null>) => {
   const tokenAddresses = Array.from(tokens.keys())
   return tokenAddresses.map(async (address) => {
     const token = tokens.get(address)

@@ -22,6 +22,8 @@ export const quoters: Record<Key, Quoter> = {
 }
 
 export type Entry = {
+  toProtocol: string
+  toProtocolPercent: string
   block: Block
   minOut: string
   value: string
@@ -41,6 +43,8 @@ export const entriesByColumn = $state<Record<Key, Entry[]>>({
 const freshEntry = (block: Block): Entry => {
   return {
     block,
+    toProtocol: '0',
+    toProtocolPercent: '0',
     minOut: '0',
     id: _.uniqueId(),
     value: '',
@@ -87,9 +91,16 @@ export const getQuotes = _.debounce(async (quoteOptions: QuoteOptions, cancelled
         return null
       }
       const minOut = formatUnits(tracerOptions.minOut, quoteOptions.outputToken!.decimals)
+      const toProtocolBigInt = ((res as TraceResult).toProtocol || []).reduce((total, transfer) => {
+        return total + transfer.value
+      }, 0n)
+      const toProtocol = formatUnits(toProtocolBigInt, quoteOptions.outputToken!.decimals)
+      const toProtocolPercent = formatUnits((toProtocolBigInt * 10_000n) / tracerOptions.minOut, 2)
       const e = sanitizeEntries(
         {
           ...entry,
+          toProtocol,
+          toProtocolPercent,
           minOut,
         },
         res as TraceResult,
@@ -141,12 +152,13 @@ const sanitizeEntries = (cell: Entry, result: TraceResult, cancelled: () => bool
 type TraceResult = {
   key: string
   names: Map<Hex, string>
-  tokens: Map<Hex, Token | null>
+  tokens: Map<Hex, Omit<Token, 'chainId' | 'name'> | null>
   transfers: Transfer[]
   trace: Trace
   tokenIn: Token
   tokenOut: Token
   situation: string
+  toProtocol: Transfer[]
 }
 
 const execute = async (
@@ -178,6 +190,11 @@ const execute = async (
     }
   }
   const transfers = findAllTransfers(tracerOptions.names, callTrace)
+  const toProtocol = transfers.filter(
+    (transfer) =>
+      getAddress(transfer.to) === getAddress('0x31415995b2ffaDf05FE929fDB6a87FD18A2817dD') ||
+      getAddress(transfer.to) === '0x', // for 9x address
+  )
   tokenData.forEach((token) => {
     if (!token) {
       return
@@ -185,6 +202,7 @@ const execute = async (
     tracerOptions.tokens.set(token.address, token)
   })
   return {
+    toProtocol,
     situation: 'success',
     tokenIn: quoteOptions.inputToken!,
     tokenOut: quoteOptions.outputToken!,

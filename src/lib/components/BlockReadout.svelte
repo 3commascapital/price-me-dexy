@@ -18,11 +18,11 @@
       emitOnBegin: true,
       pollingInterval: intervalDistanceStore.value,
       onBlock: (block) => {
-        if (blocksStore.value.latest) {
-          if (block.number % 3n !== 0n) {
-            return
-          }
-        }
+        // if (blocksStore.value.latest) {
+        //   if (block.number % 3n !== 0n) {
+        //     return
+        //   }
+        // }
         blocksStore.value = {
           ...blocksStore.value,
           latest: block as unknown as MinimalBlock,
