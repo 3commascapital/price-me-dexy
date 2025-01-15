@@ -44,7 +44,7 @@
     <div class="flex flex-col px-4">
       {#each tokens as token}
         <button class="flex w-full items-center py-1" onclick={() => select(token)}>
-          <TokenIcon {token} size={8} />
+          <TokenIcon {token} size="size-8" />
           <span>&nbsp;{token.symbol}</span>
         </button>
       {/each}
